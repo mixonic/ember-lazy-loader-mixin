@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Ember Starter Kit</title>
+  <link rel="stylesheet" href="css/normalize.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <script src="js/libs/jquery-1.9.1.js"></script>
+  <script src="js/libs/handlebars-1.0.0-rc.4.js"></script>
+  <script src="js/libs/ember-1.0.0-rc.6.js"></script>
+  <script type="text/javascript">
+    App = Ember.Application.create();
+
+    App.LazyLoaderMixin = Ember.Mixin.create({
+
+      beforeModel: function(){
+        var scriptName = 'js/'+this.get('routeName')+'.js';
+        if (!App.LazyLoaderMixin.loaded[scriptName]) {
+          return $.getScript(scriptName).then(function(){
+            App.LazyLoaderMixin.loaded[scriptName] = true;
+          });
+        }
+      }
+
+    });
+
+    App.LazyLoaderMixin.loaded = [];
+
+    App.Router.map(function() {
+      this.resource('sherlock', {path: ':name'})
+    });
+
+    App.ApplicationRoute = Em.Route.extend(App.LazyLoaderMixin);
+
+    App.IndexRoute = Em.Route.extend(App.LazyLoaderMixin, {
+      model: function(){
+        return App.Sherlock.all();
+      }
+    });
+
+    App.SherlockRoute = Em.Route.extend(App.LazyLoaderMixin, {
+      model: function(params) {
+        return App.Sherlock.find(decodeURIComponent(params.name));
+      },
+      serialize: function(model){
+        return { name: encodeURIComponent(model.get('name')) };
+      }
+    });
+
+  </script>
+
+</body>
+</html>
